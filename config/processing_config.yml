@@ -1,0 +1,8 @@
+version: 1
+datastore:
+  filename: /data/data.json #lab9
+scheduler:
+  interval: 5
+eventstores:
+  performance_url: http://dashboard/storage/monitoring/performance
+  errors_url: http://dashboard/storage/monitoring/errors

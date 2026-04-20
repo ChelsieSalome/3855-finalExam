@@ -1,0 +1,31 @@
+app:
+  port: 8120
+
+health_check:
+  interval_seconds: 5
+  timeout_seconds: 45
+
+services:
+  receiver:
+    hostname: receiver-service
+    port: 8080
+    url: http://receiver-service:8080/receiver/health
+  
+  storage:
+    hostname: storage-service
+    port: 8091
+    url: http://storage-service:8091/storage/health
+  
+  processing:
+    hostname: processing-service
+    port: 8100
+    url: http://processing-service:8100/processing/health
+  
+  analyzer:
+    hostname: analyzer-service
+    port: 5005
+    url: http://analyzer-service:5005/analyzer/health
+
+datastore:
+  type: json
+  location: /data/healthcheck/health_status.json
