@@ -1,39 +1,3 @@
-"""
-Storage Service - app.py
-
-ROLE IN THE SYSTEM:
--------------------
-Storage is the PERSISTENCE LAYER. It reads events from Kafka and saves them
-to a MySQL database. It also exposes GET endpoints so other services
-(like Processing) can query the stored data by time range.
-
-DATA FLOW:
-    Kafka topic "events" → Storage consumer thread → MySQL database
-    Processing service   → GET /storage/monitoring/performance → MySQL → JSON response
-
-KAFKA ROLE HERE: CONSUMER (with a group_id)
-    This service is a Kafka CONSUMER. A consumer READS messages FROM a Kafka topic.
-    
-    CONSUMER GROUP ("storage_group"):
-    The group_id="storage_group" is critical. Kafka tracks which messages each
-    consumer GROUP has already read using "offsets" (like a bookmark).
-    
-    - If Storage crashes and restarts, Kafka knows where it left off and resumes
-      from the last committed offset — NO messages are lost or re-processed.
-    - auto_offset_reset='earliest' means: if this group has never read before
-      (first startup), start from the very beginning of the topic.
-    - enable_auto_commit=False means: WE manually call consumer.commit() after
-      successfully processing each message. This guarantees at-least-once delivery:
-      if we crash mid-processing, the message will be re-read on restart because
-      we never committed the offset.
-    
-    CONTRAST WITH ANALYZER:
-    The Analyzer uses group_id=None (no group). This means Kafka gives it its
-    own independent read position that is NOT tracked/saved. The Analyzer always
-    reads ALL messages from the beginning on every request — it's read-only and
-    doesn't need persistence of its position.
-"""
-
 import connexion
 from connexion import NoContent
 from datetime import datetime
@@ -43,7 +7,7 @@ import logging
 import logging.config
 import threading
 import time
-
+import functools
 from models import PerformanceReading, ErrorReading
 from create_tables import make_session, init_db
 from sqlalchemy import select
@@ -366,6 +330,34 @@ def get_error_readings(start_timestamp, end_timestamp):
         return {"message": str(e)}, 400
     finally:
         session.close()
+
+
+def use_db_session(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        session = make_session()
+        try:
+            return func(session, *args, **kwargs)
+        finally:
+            session.close()
+
+    return wrapper
+
+
+
+@use_db_session
+def get_event_stats(session):
+
+    num_performance_events = session.query(PerformanceReading).count()
+    num_error_events = session.query(ErrorReading).count()
+
+    stats = {
+        "num_performance_events": num_performance_events,
+        "num_error_events": num_error_events
+    }
+
+    return stats, 200
+
 
 
 def health():

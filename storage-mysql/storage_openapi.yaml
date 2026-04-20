@@ -90,6 +90,19 @@ paths:
                 properties:
                   status:
                     type: string
+  /stats:
+    get:
+      summary: Get the event stats
+      operationId: app.get_event_stats
+      description: Gets the stats of the stored events
+      responses:
+        '200':
+          description: Successfully returned storage stats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stats'
+        
 
 components:
   schemas:
@@ -190,3 +203,15 @@ components:
           example: "2026-01-14T10:00:05Z"
           description: When this error reading was stored in the database
       type: object
+
+    Stats:
+      required:
+        - num_performance_events
+        - num_error_events
+      properties:
+        num_performance_events:
+          type: integer
+          example: 189
+        num_error_events:
+          type: integer
+          example: 213

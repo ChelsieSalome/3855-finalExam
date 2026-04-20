@@ -263,6 +263,11 @@ def health():
     """
     return {"status": "healthy"}, 200
 
+def get_stats():
+    timestamp = {
+                "status_datetime": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    }
+    return timestamp, 200
 
 # ── App Setup ─────────────────────────────────────────────────────────────────
 # Connexion wraps Flask and adds OpenAPI validation.
