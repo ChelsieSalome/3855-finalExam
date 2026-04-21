@@ -269,8 +269,8 @@ def get_stats():
     # timestamp = {
     #     "status_datetime": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
     # }
-    timestamp = "test"
-    return timestamp, 200
+    # timestamp = "test"
+    return {"status_datetime": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")}, 200
 
 # ── App Setup ─────────────────────────────────────────────────────────────────
 # Connexion wraps Flask and adds OpenAPI validation.

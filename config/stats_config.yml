@@ -1,0 +1,10 @@
+app:
+  port: 8230
+
+# add whatever your service needs:
+datastore:
+  filename: /data/stats/stats.json
+
+# if calling another service:
+dependencies:
+  storage_url: http://storage-service:8091/storage
